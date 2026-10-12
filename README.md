@@ -4,9 +4,22 @@ Agent skills for s1ft meeting data (Claude Code, Codex, Cursor, Gemini CLI).
 
 ## Install
 
+Two ways. Pick one.
+
+**Any agent (Claude Code, Codex, Cursor, Gemini CLI)** with the `skills` CLI:
+
 ```bash
 npx skills add s1ft-app/skills --skill s1ft
 ```
+
+**Claude Code plugin.** This repo is also a plugin marketplace (`s1ft-skills`) with one plugin (`s1ft`) that holds all seven skills:
+
+```bash
+claude plugin marketplace add s1ft-app/skills
+claude plugin install s1ft@s1ft-skills
+```
+
+Inside a Claude Code session, use `/plugin marketplace add s1ft-app/skills` and `/plugin install s1ft@s1ft-skills`. Plugin skills are namespaced, for example `/s1ft:s1ft` and `/s1ft:decision-log`.
 
 The `s1ft` skill reads your local meeting folders through the `s1ft` command line that ships inside S1ft.app. It sets up the link `~/.local/bin/s1ft` the first time it runs. Nothing leaves your Mac.
 
@@ -31,6 +44,10 @@ Each skill is `skills/<name>/SKILL.md`. Rules, checked by `scripts/validate_skil
 - Only Agent Skills standard top-level keys: `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`.
 - `name` equals the folder name.
 - `metadata.s1ft-uses` is a comma separated string of `transcript`, `meeting`, `voice`.
+
+## Plugin manifests
+
+`.claude-plugin/marketplace.json` lists the one plugin, with `"source": "./"` (the repo root). `.claude-plugin/plugin.json` names it and sets the version. Claude Code finds the skills in `skills/<name>/SKILL.md` by default, so the skill folders stay where `npx skills add` expects them. The plugin cache copies the whole repo root, including `tests/` and `scripts/`. Keep the two version fields equal. `tests/test_plugin_manifest.py` checks the manifests, runs `claude plugin validate . --strict`, and installs from the local repo into a temporary config dir (both tests skip when `claude` is not on PATH).
 
 ## Development
 

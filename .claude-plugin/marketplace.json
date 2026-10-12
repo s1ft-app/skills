@@ -1,0 +1,14 @@
+{
+  "name": "s1ft-skills",
+  "description": "Agent skills for s1ft meeting data: transcripts, meeting metadata and voice statistics.",
+  "owner": {
+    "name": "s1ft-app"
+  },
+  "plugins": [
+    {
+      "name": "s1ft",
+      "source": "./",
+      "description": "The s1ft data-access skill plus six library skills (follow-up email, decision log, action items, delivery review, meeting type, weekly trends)."
+    }
+  ]
+}
