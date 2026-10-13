@@ -238,3 +238,52 @@ def test_npx_skills_add_installs_into_temp_home(tmp_path: Path) -> None:
     installed = [p for p in home.rglob("SKILL.md") if p.parent.name == "s1ft"]
     assert installed, f"no s1ft/SKILL.md under the temp HOME\n{result.stdout}\n{result.stderr}"
     assert "name: s1ft" in installed[0].read_text(encoding="utf-8")
+
+
+# #208 AC 6: meetings folder resolution, empty result, config dir
+def test_documents_folder_order(skill_text: str) -> None:
+    assert "meetingsDir" in skill_text
+    assert "Application Support/s1ft/cli.json" in skill_text
+    order = [
+        skill_text.index(k)
+        for k in [
+            "`--dir <path>`",
+            "meetingsDir",
+            "the output folder set in the s1ft app",
+            "Documents/s1ft Meetings",
+        ]
+    ]
+    assert order == sorted(order)
+
+
+def test_documents_config_dir_command(skill_text: str) -> None:
+    assert "s1ft config dir <path>" in skill_text
+    assert "s1ft config dir [--json]" in skill_text
+    assert "source:" in skill_text
+
+
+def test_documents_directory_key_in_json(skill_text: str) -> None:
+    assert '{"directory":"<folder>","meetings":[...]}' in skill_text
+    assert '{"meetings":[...]}' not in skill_text
+
+
+def test_empty_result_section(skill_text: str) -> None:
+    section = skill_text.split("### Empty result or missing folder", 1)
+    assert len(section) == 2, "no empty-result section"
+    body = section[1].split("\n## ", 1)[0]
+    lowered = body.lower()
+    for word in [
+        "which folder was searched",
+        "1.3",
+        "ask the user",
+        "s1ft config dir <path>",
+        "exits `3`",
+    ]:
+        assert word.lower() in lowered, word
+    assert "retry" in lowered or "again" in lowered
+
+
+def test_fallback_reads_cli_json_first(skill_text: str) -> None:
+    fallback = skill_text.split("## 5.", 1)[1].split("\n## ", 1)[0]
+    assert fallback.index("cli.json") < fallback.index("Documents/s1ft Meetings")
+    assert "ask for the folder" in fallback

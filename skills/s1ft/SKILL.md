@@ -32,7 +32,14 @@ Run `s1ft --version`. It prints `s1ft <version>`, for example `s1ft 1.3.0`. The 
 
 ## 3. The commands
 
-All commands are read-only. Add `--json` to get JSON on stdout. Add `--dir <path>` to read another meetings folder. The default is the output folder set in the s1ft app (`~/Documents/s1ft Meetings` if the user never changed it).
+No command changes a meeting. Only `s1ft config dir <path>` writes, and it writes only the folder setting. Add `--json` to get JSON on stdout. Add `--dir <path>` to read another meetings folder.
+
+The command line picks the meetings folder in this order:
+
+1. `--dir <path>`
+2. the `meetingsDir` key in `~/Library/Application Support/s1ft/cli.json`
+3. the output folder set in the s1ft app
+4. `~/Documents/s1ft Meetings`
 
 | Command | What it does |
 |---|---|
@@ -40,18 +47,33 @@ All commands are read-only. Add `--json` to get JSON on stdout. Add `--dir <path
 | `s1ft meetings search <text> [--since D] [--until D]` | The same, only for meetings whose name or transcript text contains `<text>`. Case and accents are ignored. |
 | `s1ft meetings show <id>` | Meeting details and the transcript. |
 | `s1ft voice stats <id>` | Numbers per span from `telemetry.json`. Options: `--silence-threshold-dbfs` (default -50), `--min-silence-ms` (default 300), `--percentiles` (default 10,50,90). |
+| `s1ft config dir [--json]` | Prints the folder in use: the path, then `source: <--dir\|config\|app setting\|default>`. With `--json`: `{"directory":..,"source":..}`. |
+| `s1ft config dir <path>` | Saves `<path>` as the meetings folder (`meetingsDir` in `cli.json`). Exit `3` if `<path>` is not an existing folder. This is the only command that writes, and it writes only that setting. |
 | `s1ft --version` | `s1ft <version>`. |
 
 Details:
 
 - `<id>` is the `id` UUID from `meeting.json` (first column of `meetings list`), in any letter case. It is not the folder name.
 - `--since` and `--until` take `YYYY-MM-DD` (the whole local day, inclusive) or a full ISO 8601 instant such as `2026-10-12T09:30:00Z`.
-- `meetings list --json` and `meetings search --json` print `{"meetings":[...]}`. Each row has `id`, `name`, `platform`, `start`, `end` and `directory` (the meeting folder).
+- `meetings list --json` and `meetings search --json` print `{"directory":"<folder>","meetings":[...]}`. `directory` is the meetings folder that was searched. Each row has `id`, `name`, `platform`, `start`, `end` and `directory` (the meeting folder).
 - `meetings show <id> --json` prints `{"meeting": ..., "transcript": ..., "files": {"meeting": ..., "transcript": ..., "telemetry": ...}}`. `meeting` and `transcript` hold the parsed file contents. `files` holds the file paths. A file that does not exist is `null`. There is no voice block: use `s1ft voice stats`.
 - `voice stats --json` prints `frameMs`, `options` and `spans`. Each span has `start`, `durationSec`, `frameCount`, `voicedFrameCount`, `pitchMinHz`, `pitchMaxHz`, `pitchRangeHz`, `pitchPercentilesHz` (keys such as `p10`, `p50`, `p90`), `rmsMeanDbfs`, `peakMaxDbfs`, `silenceCount` and `silenceTotalSec`.
 - The command line never reads `transcript.md` (an old format). A meeting with only `transcript.md` shows `"transcript": null`.
 
 Exit codes: `0` ok, `3` missing data (unknown id, missing meetings folder, no version 2 `telemetry.json`), `4` usage error (bad option or date). The message is on stderr and stdout is empty.
+
+### Empty result or missing folder
+
+An empty `meetings list` or `meetings search` exits `0`. Stdout is empty (or `{"directory":"<folder>","meetings":[]}` with `--json`). Stderr says `s1ft: No meetings found in <folder>. Only meetings recorded with S1ft 1.3 or later appear.` A missing folder exits `3` with `s1ft: The meetings folder does not exist: <folder>. ...`.
+
+In both cases:
+
+1. Tell the user which folder was searched (from stderr, or `directory` in the JSON, or `s1ft config dir`). Say that recordings made before S1ft 1.3 do not appear.
+2. Ask the user for the folder that holds their meetings.
+3. Run `s1ft config dir <path>`. If it exits `3`, the folder does not exist: ask again.
+4. Run the first command again.
+
+Do not guess a folder and do not search the whole disk.
 
 ## 4. The meeting folder and its data files
 
@@ -97,7 +119,7 @@ An older meeting can hold a `telemetry.json` with `schemaVersion` 1 (summary num
 
 ## 5. If the command line cannot run
 
-If `s1ft` is not installed, or cannot run (the app is missing, or the call fails for a reason other than exit 3 or 4), read the data files directly. Find the meetings folder (default `~/Documents/s1ft Meetings`, or the folder the user names). Each subfolder with a `meeting.json` is one meeting. Read `meeting.json`, `transcript.json` and `telemetry.json` with the Read tool, and compute the numbers from the frames by the rules below. Check the `schemaVersion` of every file first.
+If `s1ft` is not installed, or cannot run (the app is missing, or the call fails for a reason other than exit 3 or 4), read the data files directly. Find the meetings folder in the same order as the command line: the `meetingsDir` key in `~/Library/Application Support/s1ft/cli.json`, then the output folder of the s1ft app, then `~/Documents/s1ft Meetings`. If no folder holds a meeting, tell the user which folders you looked in, say that recordings before S1ft 1.3 do not appear, and ask for the folder. Use the folder the user names. Each subfolder with a `meeting.json` is one meeting. Read `meeting.json`, `transcript.json` and `telemetry.json` with the Read tool, and compute the numbers from the frames by the rules below. Check the `schemaVersion` of every file first.
 
 ## 6. How to read the voice data
 
