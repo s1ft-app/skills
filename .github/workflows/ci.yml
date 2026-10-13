@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dev tools
+        run: pip install -r requirements-dev.txt
+      - name: Validator
+        run: python scripts/validate_skills.py
+      - name: Ruff
+        run: ruff check .
+      - name: Mypy
+        run: mypy scripts tests
+      - name: Pytest
+        run: pytest -m "not network"
+
+  network:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dev tools
+        run: pip install -r requirements-dev.txt
+      - name: Network tests
+        run: pytest -m network
