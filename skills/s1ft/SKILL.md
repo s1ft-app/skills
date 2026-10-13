@@ -43,8 +43,8 @@ The command line picks the meetings folder in this order:
 
 | Command | What it does |
 |---|---|
-| `s1ft meetings list [--since D] [--until D]` | One meeting per line, newest first: `id`, tab, `start`, tab, `name`. |
-| `s1ft meetings search <text> [--since D] [--until D]` | The same, only for meetings whose name or transcript text contains `<text>`. Case and accents are ignored. |
+| `s1ft meetings list [--since D] [--until D] [--attendee X]` | One meeting per line, newest first: `id`, tab, `start`, tab, `name`. `--attendee` keeps only meetings with that attendee. It needs S1ft 1.3.0 or later; S1ft 1.2.0 has no `--attendee`. |
+| `s1ft meetings search <text> [--since D] [--until D] [--attendee X]` | The same, only for meetings whose name or transcript text contains `<text>`. Case and accents are ignored. `--attendee` works as for `meetings list` (S1ft 1.3.0 or later). |
 | `s1ft meetings show <id>` | Meeting details and the transcript. |
 | `s1ft voice stats <id>` | Numbers per span from `telemetry.json`. Options: `--silence-threshold-dbfs` (default -50), `--min-silence-ms` (default 300), `--percentiles` (default 10,50,90). |
 | `s1ft config dir [--json]` | Prints the folder in use: the path, then `source: <--dir\|config\|app setting\|default>`. With `--json`: `{"directory":..,"source":..}`. |

@@ -319,3 +319,35 @@ def test_fallback_reads_cli_json_first(skill_text: str) -> None:
     fallback = skill_text.split("## 5.", 1)[1].split("\n## ", 1)[0]
     assert fallback.index("cli.json") < fallback.index("Documents/s1ft Meetings")
     assert "ask for the folder" in fallback
+
+
+# sl-2-3a AC 1 (R57): the command table names `--attendee` for meetings list and search
+def table_row(text: str, command: str) -> str:
+    rows = [ln for ln in text.splitlines() if ln.startswith(f"| `{command}")]
+    assert len(rows) == 1, f"expected one command table row for `{command}`, found {len(rows)}"
+    return rows[0]
+
+
+def test_command_table_names_attendee_for_meetings_list(skill_text: str) -> None:
+    assert "--attendee" in table_row(skill_text, "s1ft meetings list")
+
+
+def test_command_table_names_attendee_for_meetings_search(skill_text: str) -> None:
+    assert "--attendee" in table_row(skill_text, "s1ft meetings search")
+
+
+def test_attendee_only_in_list_and_search_rows(skill_text: str) -> None:
+    for command in ["s1ft meetings show", "s1ft voice stats", "s1ft config dir", "s1ft --version"]:
+        for line in skill_text.splitlines():
+            if line.startswith(f"| `{command}"):
+                assert "--attendee" not in line, line
+
+
+# sl-2-3a AC 2 (R57, R58): the skill states the first S1ft version that has `--attendee`.
+# The CLI of S1ft 1.2.0 has no `--attendee`; 1.3.0 is the first release with it.
+def test_states_first_version_with_attendee(skill_text: str) -> None:
+    lines = [ln for ln in skill_text.splitlines() if "--attendee" in ln]
+    assert lines, "the skill does not mention --attendee"
+    assert any("1.3.0" in ln for ln in lines), (
+        "no line names --attendee together with the first S1ft version (1.3.0)"
+    )
