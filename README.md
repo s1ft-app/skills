@@ -34,6 +34,7 @@ The `s1ft` skill reads your local meeting folders through the `s1ft` command lin
 | `review-my-delivery` | Evidence-based look at your pauses, pace, uptalk, fillers and interruptions in one meeting. |
 | `meeting-type` | Names the kind of meeting from the attendees, speakers, length and content. |
 | `weekly-trends` | Compares your speaking numbers week by week. |
+| `summary` | Writes a short summary of one meeting: bottom line, decisions, open issues and action items. |
 
 The library skills rely on the `s1ft` skill for data access. Each has an "Adapt this skill" section: copy the skill, then change those parts. Install one with `npx skills add s1ft-app/skills --skill <name>`.
 

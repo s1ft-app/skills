@@ -8,7 +8,7 @@
     {
       "name": "s1ft",
       "source": "./",
-      "description": "The s1ft data-access skill plus library skills for follow-up email, decision log, action items, delivery review, meeting type and weekly trends."
+      "description": "The s1ft data-access skill plus library skills for follow-up email, decision log, action items, delivery review, meeting type, weekly trends and summary."
     }
   ]
 }
