@@ -12,7 +12,7 @@ Two ways. Pick one.
 npx skills add s1ft-app/skills --skill s1ft
 ```
 
-**Claude Code plugin.** This repo is also a plugin marketplace (`s1ft-skills`) with one plugin (`s1ft`) that holds all seven skills:
+**Claude Code plugin.** This repo is also a plugin marketplace (`s1ft-skills`) with one plugin (`s1ft`) that holds all the skills:
 
 ```bash
 claude plugin marketplace add s1ft-app/skills
@@ -48,6 +48,14 @@ Each skill is `skills/<name>/SKILL.md`. Rules, checked by `scripts/validate_skil
 ## Plugin manifests
 
 `.claude-plugin/marketplace.json` lists the one plugin, with `"source": "./"` (the repo root). `.claude-plugin/plugin.json` names it and sets the version. Claude Code finds the skills in `skills/<name>/SKILL.md` by default, so the skill folders stay where `npx skills add` expects them. The plugin cache copies the whole repo root, including `tests/` and `scripts/`. Keep the two version fields equal. `tests/test_plugin_manifest.py` checks the manifests, runs `claude plugin validate . --strict`, and installs from the local repo into a temporary config dir (both tests skip when `claude` is not on PATH).
+
+## Contributing
+
+Post an idea in [Discussions](https://github.com/s1ft-app/skills/discussions) first, then open a pull request. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the rules.
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE).
 
 ## Development
 
