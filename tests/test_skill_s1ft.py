@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from conftest import BASE_SKILL, REPO, VALIDATOR, run_validator
+from conftest import BASE_SKILL, NEW_SKILLS, REPO, VALIDATOR, run_validator
 
 APP_HELPER = "/Applications/S1ft.app/Contents/Helpers/s1ft"
 LINK = "~/.local/bin/s1ft"
@@ -238,6 +238,38 @@ def test_npx_skills_add_installs_into_temp_home(tmp_path: Path) -> None:
     installed = [p for p in home.rglob("SKILL.md") if p.parent.name == "s1ft"]
     assert installed, f"no s1ft/SKILL.md under the temp HOME\n{result.stdout}\n{result.stderr}"
     assert "name: s1ft" in installed[0].read_text(encoding="utf-8")
+
+
+# R13: after the merge, `npx skills add` installs each new skill.
+@pytest.mark.network
+@pytest.mark.parametrize("name", NEW_SKILLS)
+def test_npx_skills_add_installs_each_new_skill(name: str, tmp_path: Path) -> None:
+    if shutil.which("npx") is None:
+        pytest.skip("npx is not installed")
+    if not online():
+        pytest.skip("github.com is not reachable")
+    home = tmp_path / "home"
+    home.mkdir()
+    env = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "HOME": str(home),
+        "CI": "1",
+        "DISABLE_TELEMETRY": "1",
+    }
+    result = subprocess.run(
+        ["npx", "--yes", "skills", "add", "s1ft-app/skills", "--skill", name, "-a", "claude-code",
+         "-y"],
+        env=env,
+        cwd=home,
+        capture_output=True,
+        text=True,
+        timeout=240,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    installed = [p for p in home.rglob("SKILL.md") if p.parent.name == name]
+    assert installed, f"no {name}/SKILL.md under the temp HOME\n{result.stdout}\n{result.stderr}"
+    assert f"name: {name}" in installed[0].read_text(encoding="utf-8")
 
 
 # #208 AC 6: meetings folder resolution, empty result, config dir

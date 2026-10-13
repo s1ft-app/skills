@@ -1,7 +1,7 @@
 {
   "name": "s1ft",
-  "version": "0.1.0",
-  "description": "The s1ft data-access skill plus library skills for follow-up email, decision log, action items, delivery review, meeting type and weekly trends.",
+  "version": "0.2.0",
+  "description": "The s1ft data-access skill plus library skills for follow-up email, decision log, action items, delivery review, meeting type, weekly trends and summary.",
   "author": {
     "name": "s1ft-app"
   }
