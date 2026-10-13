@@ -4,7 +4,7 @@ Thank you for adding a skill. Read this page before you open a pull request.
 
 ## 1. Post the idea first
 
-Post an idea in [Discussions](https://github.com/s1ft-app/skills/discussions) (category "Ideas") before you open a pull request. Say what the skill does and which meeting data it reads. Open the pull request after the idea has a response.
+Post an idea in [Discussions](https://github.com/s1ft-app/skills/discussions) (category "Community skills") before you open a pull request. Say what the skill does and which meeting data it reads. Open the pull request after the idea has a response.
 
 ## 2. Format rules
 
