@@ -5,9 +5,9 @@ from __future__ import annotations
 import re
 
 import pytest
-from conftest import REPO, run_validator
+from conftest import NEW_SKILLS, REPO, run_validator
 
-LIBRARY = [
+SIX_LIBRARY_SKILLS = [
     "follow-up-email",
     "decision-log",
     "action-items",
@@ -15,6 +15,8 @@ LIBRARY = [
     "meeting-type",
     "weekly-trends",
 ]
+# skills-library R3: each new skill passes the tests that apply to all library skills.
+LIBRARY = [*SIX_LIBRARY_SKILLS, *NEW_SKILLS]
 VOICE_SKILLS = ["review-my-delivery", "weekly-trends"]
 SKILLS = REPO / "skills"
 

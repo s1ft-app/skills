@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from conftest import REPO
+from conftest import NEW_SKILLS, REPO
 
 MANIFEST_DIR = REPO / ".claude-plugin"
 MARKETPLACE = MANIFEST_DIR / "marketplace.json"
@@ -21,6 +21,7 @@ RESERVED_PLUGIN_PREFIXES = ("claude-", "anthropic-", "cc-plugin-")
 NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 EXPECTED_SKILLS = {
     "s1ft",
+    "summary",
     "action-items",
     "decision-log",
     "follow-up-email",
@@ -82,11 +83,43 @@ def test_names_and_versions_consistent() -> None:
             assert entry["version"] == plugin["version"]
 
 
-def test_all_seven_skills_discoverable() -> None:
+def test_all_skills_discoverable() -> None:
     folders = {p.name for p in SKILLS.iterdir() if p.is_dir() and not p.name.startswith(".")}
     assert folders == EXPECTED_SKILLS
     for name in folders:
         assert (SKILLS / name / "SKILL.md").is_file()
+
+
+def version_tuple(version: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in version.split("."))
+
+
+def git(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *args], cwd=REPO, capture_output=True, text=True, timeout=60, check=False
+    )
+
+
+def test_version_is_higher_than_first_release() -> None:
+    """R14: a new skill raises the version. 0.1.0 is the version before `summary`."""
+    assert version_tuple(load(PLUGIN)["version"]) > (0, 1, 0)
+
+
+def test_version_is_higher_than_on_main_before_the_pull_request() -> None:
+    """R14: compare with the version of the merge base with origin/main.
+
+    Skips when there is no origin/main, or when HEAD is already on main (after the merge).
+    """
+    if git("rev-parse", "--verify", "-q", "origin/main").returncode != 0:
+        pytest.skip("no origin/main ref")
+    if git("merge-base", "--is-ancestor", "HEAD", "origin/main").returncode == 0:
+        pytest.skip("HEAD is on main")
+    base = git("merge-base", "HEAD", "origin/main").stdout.strip()
+    shown = git("show", f"{base}:.claude-plugin/plugin.json")
+    if shown.returncode != 0:
+        pytest.skip("the merge base has no plugin.json")
+    before = json.loads(shown.stdout)["version"]
+    assert version_tuple(load(PLUGIN)["version"]) > version_tuple(before)
 
 
 def test_no_personal_paths_or_emails() -> None:
@@ -150,3 +183,5 @@ def test_install_from_local_repo_end_to_end(tmp_path: Path) -> None:
     }
     assert installed_skills == EXPECTED_SKILLS
     assert "s1ft" in installed_skills
+    # R12: the new skills are in the plugin, so they start as /s1ft:<name>.
+    assert set(NEW_SKILLS) <= installed_skills
